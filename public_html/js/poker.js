@@ -21,11 +21,31 @@
         return data;
     };
 
-    const render = (hand) => hand.forEach((c, i) => {
-        const r = c[0] === 'T' ? '10' : c[0];
-        cards[i].className = 'card' + ('HD'.includes(c[1]) ? ' red' : '');
-        cards[i].innerHTML = `<span class="held">HELD</span><span>${r}</span><span class="suit">${SUIT[c[1]]}</span>`;
-    });
+    let current = [];
+    const FACE = { J: 'Jack', Q: 'Queen', K: 'King', A: 'Ace' };
+
+    // Re-render only cards that changed, with a staggered deal animation.
+    const render = (hand) => {
+        let n = 0;
+        hand.forEach((c, i) => {
+            if (current[i] === c && !cards[i].classList.contains('back')) return;
+            const r = c[0] === 'T' ? '10' : c[0];
+            const s = SUIT[c[1]];
+            const center = 'JQK'.includes(c[0])
+                ? `<span class="pip face"><span>${r}</span><span>${s}</span></span>`
+                : `<span class="pip">${s}</span>`;
+            const el = cards[i];
+            el.className = 'card' + ('HD'.includes(c[1]) ? ' red' : '');
+            el.setAttribute('aria-label', `${FACE[c[0]] || r} of ${{S:'spades',H:'hearts',D:'diamonds',C:'clubs'}[c[1]]}`);
+            el.innerHTML = `<span class="held">HELD</span>`
+                + `<span class="corner tl">${r}<small>${s}</small></span>${center}`
+                + `<span class="corner br">${r}<small>${s}</small></span>`;
+            el.style.animationDelay = `${n++ * 90}ms`;
+            void el.offsetWidth; // restart animation
+            el.classList.add('deal');
+        });
+        current = [...hand];
+    };
 
     const highlight = (name) => document.querySelectorAll('.paytable tr[data-hand]')
         .forEach(tr => tr.classList.toggle('win', tr.dataset.hand === name));
@@ -40,9 +60,16 @@
         $('action').textContent = state === 'dealt' ? 'Draw' : (credits <= 0 ? 'Refill' : 'Deal');
     };
 
-    cards.forEach(card => card.addEventListener('click', () => {
-        if (state === 'dealt') card.classList.toggle('hold');
-    }));
+    const toggle = (card) => { if (state === 'dealt' && !busy) card.classList.toggle('hold'); };
+    cards.forEach(card => card.addEventListener('click', () => toggle(card)));
+
+    document.addEventListener('keydown', (e) => {
+        if (e.target.closest('input, textarea') || e.metaKey || e.ctrlKey) return;
+        if (e.key >= '1' && e.key <= '5') toggle(cards[+e.key - 1]);
+        else if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (!busy) $('action').click(); }
+        else if (state !== 'dealt' && !busy && (e.key === '+' || e.key === '=')) $('betUp').click();
+        else if (state !== 'dealt' && !busy && e.key === '-') $('betDown').click();
+    });
 
     $('betUp').onclick = () => { bet = Math.min(5, bet + 1); updateUi(); };
     $('betDown').onclick = () => { bet = Math.max(1, bet - 1); updateUi(); };
@@ -57,6 +84,8 @@
                 render(d.hand); credits = d.credits; state = 'idle';
                 highlight(d.result);
                 $('message').textContent = d.result ? `${d.result}! You win ${d.payout}` : 'No win. Deal again.';
+                $('message').classList.toggle('win', !!d.result);
+                if (d.result) cards.forEach(c => c.classList.add('winner'));
             } else if (credits <= 0) {
                 const d = await post(cfg.routes.reset);
                 credits = d.credits;
@@ -64,6 +93,8 @@
             } else {
                 if (bet > credits) bet = credits;
                 const d = await post(cfg.routes.deal, { bet });
+                $('message').classList.remove('win');
+                cards.forEach(c => c.classList.add('back'));
                 render(d.hand); credits = d.credits; state = 'dealt';
                 highlight(d.preview);
                 $('message').textContent = 'Tap cards to hold, then Draw.';

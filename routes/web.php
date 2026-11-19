@@ -10,6 +10,7 @@ Route::post('/game/deal', [GameController::class, 'deal'])->name('game.deal');
 Route::post('/game/draw', [GameController::class, 'draw'])->name('game.draw');
 Route::post('/game/reset', [GameController::class, 'reset'])->name('game.reset');
 
+Route::view('/how-to-play', 'how-to-play', ['paytable' => \App\Poker\HandEvaluator::PAYTABLE])->name('how-to-play');
 Route::get('/leaderboard', [LeaderboardController::class, 'index'])->name('leaderboard');
 
 Route::middleware('guest')->group(function () {

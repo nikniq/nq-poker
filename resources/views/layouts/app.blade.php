@@ -11,6 +11,7 @@
 <header class="nav">
     <a href="{{ route('game') }}" class="brand">♠ Poker</a>
     <nav>
+        <a href="{{ route('how-to-play') }}">How to Play</a>
         <a href="{{ route('leaderboard') }}">Leaderboard</a>
         @auth
             <a href="{{ route('history') }}">My Scores</a>

@@ -6,6 +6,8 @@
         <p class="notice">Playing as guest. <a href="{{ route('register') }}">Register</a> or <a href="{{ route('login') }}">log in</a> to save your scores.</p>
     @endguest
 
+    <div class="table-top"><a href="{{ route('how-to-play') }}" class="btn small ghost">? How to play</a></div>
+
     <table class="paytable">
         <tr><th>Hand</th>@for ($b = 1; $b <= 5; $b++)<th data-bet-col="{{ $b }}">{{ $b }}</th>@endfor</tr>
         @foreach ($paytable as $name => $mult)
@@ -26,15 +28,16 @@
     </div>
 
     <div class="controls">
-        <div>Credits: <strong id="credits">{{ $credits }}</strong></div>
-        <div class="bet">
-            Bet: <button id="betDown" class="btn small">−</button>
+        <div class="meter">Credits <strong id="credits">{{ $credits }}</strong></div>
+        <div class="bet meter">
+            Bet <button id="betDown" class="btn small">−</button>
             <strong id="bet">1</strong>
             <button id="betUp" class="btn small">+</button>
             <button id="betMax" class="btn small">Max</button>
         </div>
         <button id="action" class="btn big">Deal</button>
     </div>
+    <p class="keys">Keys: <kbd>1</kbd>–<kbd>5</kbd> hold &nbsp; <kbd>Space</kbd> deal/draw &nbsp; <kbd>+</kbd>/<kbd>−</kbd> bet</p>
 </section>
 @endsection
 
