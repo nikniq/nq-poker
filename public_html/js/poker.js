@@ -22,6 +22,21 @@
     };
 
     let current = [];
+    let hints = true;
+    try { hints = localStorage.getItem('pokerHints') !== 'off'; } catch (e) {}
+    let lastHint = null;
+    const showHint = () => {
+        cards.forEach(c => c.classList.remove('hint'));
+        $('hint').hidden = !(hints && state === 'dealt' && lastHint);
+        if ($('hint').hidden) return;
+        lastHint.hold.forEach(i => cards[i].classList.add('hint'));
+        $('hint').textContent = '💡 ' + lastHint.reason;
+    };
+    const setHints = (on) => {
+        hints = on; $('hintToggle').checked = on;
+        try { localStorage.setItem('pokerHints', on ? 'on' : 'off'); } catch (e) {}
+        showHint();
+    };
     const FACE = { J: 'Jack', Q: 'Queen', K: 'King', A: 'Ace' };
 
     // Re-render only cards that changed, with a staggered deal animation.
@@ -63,8 +78,11 @@
     const toggle = (card) => { if (state === 'dealt' && !busy) card.classList.toggle('hold'); };
     cards.forEach(card => card.addEventListener('click', () => toggle(card)));
 
+    $('hintToggle').onchange = (e) => setHints(e.target.checked);
+
     document.addEventListener('keydown', (e) => {
         if (e.target.closest('input, textarea') || e.metaKey || e.ctrlKey) return;
+        if (e.key === 'h' || e.key === 'H') return setHints(!hints);
         if (e.key >= '1' && e.key <= '5') toggle(cards[+e.key - 1]);
         else if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (!busy) $('action').click(); }
         else if (state !== 'dealt' && !busy && (e.key === '+' || e.key === '=')) $('betUp').click();
@@ -97,14 +115,16 @@
                 cards.forEach(c => c.classList.add('back'));
                 render(d.hand); credits = d.credits; state = 'dealt';
                 highlight(d.preview);
+                lastHint = window.pokerHint(d.hand);
                 $('message').textContent = 'Tap cards to hold, then Draw.';
             }
         } catch (e) {
             $('message').textContent = e.message;
         } finally {
-            busy = false; updateUi();
+            busy = false; updateUi(); showHint();
         }
     };
 
+    $('hintToggle').checked = hints;
     updateUi();
 })();

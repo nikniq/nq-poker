@@ -60,6 +60,7 @@
     <p><small>Faded cards don't count toward the hand.</small></p>
 
     <h2>Strategy tips</h2>
+    <p class="tip">New to the game? Leave <strong>Hints</strong> switched on (top of the table). After each deal, a dashed outline shows which cards to hold, with a short reason why. Once you're making the same choices yourself, switch hints off with the toggle or press <kbd>H</kbd>.</p>
     <ul>
         <li><strong>Always bet 5 credits if you can afford it.</strong> A Royal Flush pays 4000 at max bet instead of 1250, which is the biggest swing in the game.</li>
         <li><strong>Never break up a paying hand</strong> (except to chase a Royal Flush when you already have four of its cards).</li>
