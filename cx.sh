@@ -54,6 +54,13 @@ DIAGNOSE
 33 : ARTISAN: run a command
 34 : CONFIG: environment summary (secrets hidden)
 35 : DISK: usage
+DATABASE
+50 : MIGRATE: run pending migrations
+51 : MIGRATE: preview SQL (--pretend)
+52 : MIGRATE: rollback last batch  [confirms]
+53 : MIGRATE: rollback N steps  [confirms]
+54 : MIGRATE: fresh + seed  [WIPES ALL DATA]
+55 : DB: backup (mysqldump to ~/backups)
 MAINTENANCE
 40 : SEED: run one seeder class
 41 : QUEUE: list failed jobs
@@ -128,6 +135,33 @@ case "$SELECTION" in
   43) confirm "This takes the site down."; remote "php artisan down" && log_history "Maintenance ON" ;;
   44) remote "php artisan up" && log_history "Maintenance OFF" ;;
   45) confirm "Discard the Laravel log?"; remote ": > storage/logs/laravel.log" && log_history "Truncated log" ;;
+  50) banner "MIGRATE"; remote "php artisan migrate:status | grep -i pending; php artisan migrate --force" && log_history "Migrated $PROJECT" ;;
+  51) banner "MIGRATE: preview"; remote "php artisan migrate --pretend --force" ;;
+  52)
+    banner "MIGRATE: rollback last batch"
+    remote "php artisan migrate:status | tail -n 15"
+    confirm "Roll back the last migration batch? Dropped columns/tables lose their data."
+    remote "php artisan migrate:rollback --force" && log_history "Rolled back last batch"
+    ;;
+  53)
+    banner "MIGRATE: rollback N steps"
+    need_param "Number of steps"
+    confirm "Roll back $PARAM2 migration(s)? Dropped columns/tables lose their data."
+    remote "php artisan migrate:rollback --step=$PARAM2 --force" && log_history "Rolled back $PARAM2 steps"
+    ;;
+  54)
+    banner "MIGRATE: fresh + seed"
+    echo "⚠ Drops EVERY table on the server and rebuilds from scratch. Run 55 first."
+    read -r -p "Type the project name ($PROJECT) to continue: " reply
+    [ "$reply" = "$PROJECT" ] || { echo "Skipped."; exit 0; }
+    remote_tty "php artisan migrate:fresh --seed --force" && log_history "migrate:fresh --seed on $PROJECT"
+    ;;
+  55)
+    banner "DB: backup"
+    # Reads credentials from the server's .env; the password is passed via env, not argv.
+    remote 'set -a; . ./.env; set +a; mkdir -p ~/backups; f=~/backups/${DB_DATABASE}-$(date +%Y%m%d-%H%M%S).sql.gz; MYSQL_PWD="$DB_PASSWORD" mysqldump -h "${DB_HOST:-localhost}" -P "${DB_PORT:-3306}" -u "$DB_USERNAME" --single-transaction --no-tablespaces "$DB_DATABASE" | gzip > "$f" && ls -lh "$f"' \
+      && log_history "Backed up database"
+    ;;
   00) $APP_SSH -t "$REMOTE" "cd ~/$REMOTE_APP 2>/dev/null; exec \$SHELL -l" ;;
   01)
     banner "FIRST-TIME SERVER SETUP"
