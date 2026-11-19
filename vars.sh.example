@@ -1,0 +1,16 @@
+#!/bin/bash
+# Settings for cx.sh (LOCAL). Copy to vars.sh and fill in — vars.sh is gitignored.
+
+PROJECT="nq-poker"
+REMOTE_USER="your-ssh-user"
+REMOTE_HOST="your-host.example.com"
+REMOTE="$REMOTE_USER@$REMOTE_HOST"
+REMOTE_PORT="22"
+
+# App root on the server, relative to ~ (where artisan and deploy.sh live).
+REMOTE_APP="$PROJECT"
+
+# Public URL, used by the health check.
+APP_URL="https://example.com"
+
+APP_SSH="ssh -p $REMOTE_PORT"
