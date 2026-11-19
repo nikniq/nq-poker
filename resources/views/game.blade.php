@@ -7,9 +7,14 @@
     @endguest
 
     <div class="table-top">
+        <div class="toggles">
+        <label class="switch" title="Sound effects (M)">
+            <input type="checkbox" id="soundToggle" checked><span class="slider"></span> Sound
+        </label>
         <label class="switch" title="Suggests which cards to hold. Turn off once you know the strategy. (H)">
             <input type="checkbox" id="hintToggle" checked><span class="slider"></span> Hints
         </label>
+        </div>
         <a href="{{ route('how-to-play') }}" class="btn small ghost">? How to play</a></div>
 
     <table class="paytable">
@@ -43,7 +48,12 @@
         </div>
         <button id="action" class="btn big">Deal</button>
     </div>
-    <p class="keys">Keys: <kbd>1</kbd>–<kbd>5</kbd> hold &nbsp; <kbd>Space</kbd> deal/draw &nbsp; <kbd>+</kbd>/<kbd>−</kbd> bet &nbsp; <kbd>H</kbd> hints</p>
+    <div class="stats">
+        <span>Hands <b id="statHands">0</b></span>
+        <span>Win rate <b id="statRate">–</b></span>
+        <span>Best win <b id="statBest">0</b></span>
+    </div>
+    <p class="keys">Keys: <kbd>1</kbd>–<kbd>5</kbd> hold &nbsp; <kbd>Space</kbd> deal/draw &nbsp; <kbd>+</kbd>/<kbd>−</kbd> bet &nbsp; <kbd>H</kbd> hints &nbsp; <kbd>M</kbd> sound</p>
 </section>
 @endsection
 

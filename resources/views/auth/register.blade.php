@@ -4,6 +4,7 @@
 <section class="panel narrow">
     <h1>Register</h1>
     <p>Create an account to save your scores and appear on the leaderboard.</p>
+    @include('auth.partials.oauth')
     <form method="POST" action="{{ route('register') }}">
         @csrf
         <label>Player name <input name="name" value="{{ old('name') }}" required autofocus></label>

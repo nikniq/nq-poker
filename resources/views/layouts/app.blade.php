@@ -15,7 +15,7 @@
         <a href="{{ route('leaderboard') }}">Leaderboard</a>
         @auth
             <a href="{{ route('history') }}">My Scores</a>
-            <span class="who">{{ auth()->user()->name }}</span>
+            <span class="who">@if (auth()->user()->avatar)<img src="{{ auth()->user()->avatar }}" alt="" class="avatar" referrerpolicy="no-referrer">@endif{{ auth()->user()->name }}</span>
             <form method="POST" action="{{ route('logout') }}" class="inline">@csrf<button class="link">Log out</button></form>
         @else
             <a href="{{ route('login') }}">Log in</a>

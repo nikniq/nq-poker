@@ -56,6 +56,11 @@ main { max-width:920px; margin:0 auto; padding:16px; }
 .card.hint:not(.hold)::before { content:""; position:absolute; inset:-6px; border:2px dashed var(--gold); border-radius:13px; pointer-events:none; animation:pulse 1.4s ease-in-out infinite; }
 @keyframes pulse { 50% { opacity:.35; } }
 
+.toggles { display:flex; gap:18px; flex-wrap:wrap; }
+.stats { display:flex; justify-content:center; gap:22px; margin-top:12px; font-size:.8rem; text-transform:uppercase; letter-spacing:1px; opacity:.85; flex-wrap:wrap; }
+.stats b { color:var(--gold); font-family:ui-monospace, Menlo, monospace; font-size:1rem; margin-left:4px; }
+.avatar { width:26px; height:26px; border-radius:50%; vertical-align:middle; margin-right:6px; border:2px solid var(--gold); object-fit:cover; }
+
 /* Paytable */
 .paytable {
     width:100%; border-collapse:separate; border-spacing:0; background:linear-gradient(180deg, #1c2580, var(--pay-bg));
@@ -143,6 +148,15 @@ kbd { background:rgba(0,0,0,.4); border:1px solid rgba(255,255,255,.25); border-
 .mini span.r { color:var(--red); }
 .mini span.dim { opacity:.45; }
 .tip { background:rgba(0,0,0,.3); border-left:4px solid var(--gold); padding:10px 14px; border-radius:6px; }
+
+/* OAuth */
+.btn-oauth { display:flex; align-items:center; justify-content:center; gap:10px; width:100%; margin-top:10px; background:#fff; color:#222; box-shadow:0 2px 0 #bbb, 0 4px 10px rgba(0,0,0,.3); }
+.btn-oauth:hover:not(:disabled) { filter:none; background:#f1f3f4; }
+.btn-nikniq { background:linear-gradient(180deg,#2b2f6b,#141a5c); color:#fff; box-shadow:0 2px 0 #0a0d33, 0 4px 10px rgba(0,0,0,.3); }
+.btn-nikniq:hover:not(:disabled) { background:linear-gradient(180deg,#363b80,#1c2580); }
+.nq-logo { background:var(--gold); color:#141a5c; border-radius:4px; padding:0 5px; font:900 .85rem system-ui; letter-spacing:-.5px; }
+.or { display:flex; align-items:center; gap:10px; opacity:.7; font-size:.85rem; margin:18px 0 4px; }
+.or::before, .or::after { content:""; flex:1; border-top:1px solid rgba(255,255,255,.3); }
 
 /* Panels / forms / grids */
 .panel { background:rgba(0,0,0,.3); border-radius:12px; padding:20px; }
