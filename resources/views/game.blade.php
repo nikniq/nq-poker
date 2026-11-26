@@ -15,7 +15,11 @@
             <input type="checkbox" id="hintToggle" checked><span class="slider"></span> Hints
         </label>
         </div>
-        <a href="{{ route('how-to-play') }}" class="btn small ghost">? How to play</a></div>
+        <div class="table-actions">
+            <a href="{{ route('how-to-play') }}" class="btn small ghost">? How to play</a>
+            <button type="button" id="fullscreen" class="btn small ghost" title="Full screen (F)" aria-pressed="false">⛶ Full screen</button>
+        </div>
+    </div>
 
     <table class="paytable">
         <tr><th>Hand</th>@for ($b = 1; $b <= 5; $b++)<th data-bet-col="{{ $b }}">{{ $b }}</th>@endfor</tr>
@@ -45,6 +49,8 @@
         </div>
     </div>
 
+    <div class="felt-logo" aria-hidden="true"><span>♠ ♥</span> JACKS OR BETTER <span>♣ ♦</span></div>
+
     <div id="hand" class="hand">
         @for ($i = 0; $i < 5; $i++)
             <div class="card back" data-index="{{ $i }}"><span class="held">HELD</span></div>
@@ -66,7 +72,7 @@
         <span>Win rate <b id="statRate">–</b></span>
         <span>Best win <b id="statBest">0</b></span>
     </div>
-    <p class="keys">Keys: <kbd>1</kbd>–<kbd>5</kbd> hold &nbsp; <kbd>Space</kbd> deal/draw &nbsp; <kbd>+</kbd>/<kbd>−</kbd> bet &nbsp; <kbd>H</kbd> hints &nbsp; <kbd>M</kbd> sound &nbsp; <kbd>R</kbd>/<kbd>B</kbd>/<kbd>C</kbd> double up</p>
+    <p class="keys">Keys: <kbd>1</kbd>–<kbd>5</kbd> hold &nbsp; <kbd>Space</kbd> deal/draw &nbsp; <kbd>+</kbd>/<kbd>−</kbd> bet &nbsp; <kbd>H</kbd> hints &nbsp; <kbd>M</kbd> sound &nbsp; <kbd>R</kbd>/<kbd>B</kbd>/<kbd>C</kbd> double up &nbsp; <kbd>F</kbd> full screen</p>
 </section>
 @endsection
 

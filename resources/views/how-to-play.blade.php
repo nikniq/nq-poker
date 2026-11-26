@@ -17,6 +17,8 @@
     </ol>
     <p class="tip">Out of credits? The Deal button becomes <strong>Refill</strong> and gives you a fresh {{ 100 }} credits. Log in to keep your credits and get on the leaderboard.</p>
 
+    <p class="tip">Want a bigger table? Press <strong>⛶ Full screen</strong> above the paytable (or <kbd>F</kbd>). Press it again or <kbd>Esc</kbd> to exit.</p>
+
     <h2>Winning hands (best to worst)</h2>
     <table class="ranks">
         @php

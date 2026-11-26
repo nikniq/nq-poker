@@ -81,15 +81,37 @@
     const FACE = { J: 'Jack', Q: 'Queen', K: 'King', A: 'Ace' };
 
     // Re-render only cards that changed, with a staggered deal animation.
+    // Classic pip positions [x%, y%] for number cards; pips below the middle are flipped.
+    const PIPS = {
+        2: [[50, 20], [50, 80]],
+        3: [[50, 20], [50, 50], [50, 80]],
+        4: [[15, 20], [85, 20], [15, 80], [85, 80]],
+        5: [[15, 20], [85, 20], [50, 50], [15, 80], [85, 80]],
+        6: [[15, 20], [85, 20], [15, 50], [85, 50], [15, 80], [85, 80]],
+        7: [[15, 20], [85, 20], [50, 35], [15, 50], [85, 50], [15, 80], [85, 80]],
+        8: [[15, 20], [85, 20], [50, 35], [15, 50], [85, 50], [50, 65], [15, 80], [85, 80]],
+        9: [[15, 20], [85, 20], [15, 40], [85, 40], [50, 50], [15, 60], [85, 60], [15, 80], [85, 80]],
+        10: [[15, 20], [85, 20], [50, 30], [15, 40], [85, 40], [15, 60], [85, 60], [50, 70], [15, 80], [85, 80]],
+    };
+    const COURT = { J: '♞', Q: '♛', K: '♚' };
+    const cardCenter = (rank, s) => {
+        if (COURT[rank]) {
+            return `<span class="court"><span class="court-glyph">${COURT[rank]}</span><span class="court-suit">${s}</span>`
+                + `<span class="court-glyph flip">${COURT[rank]}</span></span>`;
+        }
+        if (rank === 'A') return `<span class="pip ace">${s}</span>`;
+        const n = rank === 'T' ? 10 : +rank;
+        return `<span class="pips">${PIPS[n].map(([x, y]) =>
+            `<i style="left:${x}%;top:${y}%"${y > 50 ? ' class="flip"' : ''}>${s}</i>`).join('')}</span>`;
+    };
+
     const render = (hand) => {
         let n = 0;
         hand.forEach((c, i) => {
             if (current[i] === c && !cards[i].classList.contains('back')) return;
             const r = c[0] === 'T' ? '10' : c[0];
             const s = SUIT[c[1]];
-            const center = 'JQK'.includes(c[0])
-                ? `<span class="pip face"><span>${r}</span><span>${s}</span></span>`
-                : `<span class="pip">${s}</span>`;
+            const center = cardCenter(c[0], s);
             const el = cards[i];
             el.className = 'card' + ('HD'.includes(c[1]) ? ' red' : '');
             el.setAttribute('aria-label', `${FACE[c[0]] || r} of ${{S:'spades',H:'hearts',D:'diamonds',C:'clubs'}[c[1]]}`);
@@ -115,6 +137,64 @@
         $('action').disabled = busy;
         $('action').textContent = state === 'dealt' ? 'Draw' : (credits <= 0 ? 'Refill' : 'Deal');
     };
+
+    // --- Confetti for big wins (canvas, auto-removed) ---
+    const confetti = (count = 120) => {
+        if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        const host = document.querySelector('.table');
+        const cv = document.createElement('canvas');
+        cv.className = 'confetti';
+        host.appendChild(cv);
+        const w = cv.width = host.clientWidth, h = cv.height = host.clientHeight, ctx = cv.getContext('2d');
+        const colors = ['#f5c542', '#ffffff', '#d32f2f', '#4fc3f7', '#81c784'];
+        const parts = Array.from({ length: count }, () => ({
+            x: w / 2 + (Math.random() - .5) * w * .3, y: h * .45,
+            vx: (Math.random() - .5) * 12, vy: -Math.random() * 12 - 4,
+            r: Math.random() * 6 + 3, a: Math.random() * 6, va: (Math.random() - .5) * .3,
+            c: colors[Math.floor(Math.random() * colors.length)],
+        }));
+        const t0 = performance.now();
+        const frame = (now) => {
+            ctx.clearRect(0, 0, w, h);
+            parts.forEach(p => {
+                p.vy += .35; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.a += p.va;
+                ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.a); ctx.fillStyle = p.c;
+                ctx.fillRect(-p.r / 2, -p.r / 4, p.r, p.r / 2); ctx.restore();
+            });
+            if (now - t0 < 2600) requestAnimationFrame(frame); else cv.remove();
+        };
+        requestAnimationFrame(frame);
+    };
+
+    // --- Full screen (Fullscreen API, CSS fallback for iPhone Safari) ---
+    const tableEl = document.querySelector('.table');
+    const nativeFs = !!(tableEl.requestFullscreen || tableEl.webkitRequestFullscreen);
+    const isFull = () => !!(document.fullscreenElement || document.webkitFullscreenElement) || tableEl.classList.contains('pseudo-full');
+    const syncFull = () => {
+        const on = isFull();
+        tableEl.classList.toggle('is-full', on);
+        document.body.classList.toggle('game-full', on);
+        $('fullscreen').innerHTML = on ? '<span aria-hidden="true">⤡</span> Exit full screen' : '<span aria-hidden="true">⛶</span> Full screen';
+        $('fullscreen').setAttribute('aria-pressed', on);
+    };
+    const toggleFull = async () => {
+        try {
+            if (isFull()) {
+                if (tableEl.classList.contains('pseudo-full')) tableEl.classList.remove('pseudo-full');
+                else await (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+            } else if (nativeFs) {
+                await (tableEl.requestFullscreen || tableEl.webkitRequestFullscreen).call(tableEl);
+            } else {
+                tableEl.classList.add('pseudo-full');
+            }
+        } catch (e) {
+            tableEl.classList.toggle('pseudo-full');
+        }
+        syncFull();
+    };
+    $('fullscreen').onclick = toggleFull;
+    document.addEventListener('fullscreenchange', syncFull);
+    document.addEventListener('webkitfullscreenchange', syncFull);
 
     // --- Double Up ---
     let doubling = false;
@@ -176,6 +256,8 @@
         if (e.target.closest('input, textarea') || e.metaKey || e.ctrlKey) return;
         if (e.key === 'h' || e.key === 'H') return setHints(!hints);
         if (e.key === 'm' || e.key === 'M') return setSound(!sound);
+        if (e.key === 'f' || e.key === 'F') return toggleFull();
+        if (e.key === 'Escape' && tableEl.classList.contains('pseudo-full')) { tableEl.classList.remove('pseudo-full'); return syncFull(); }
         if (doubling && /^[rbc]$/i.test(e.key)) return e.key.toLowerCase() === 'c' ? $('collect').click() : pick(e.key.toLowerCase() === 'r' ? 'red' : 'black');
         if (e.key >= '1' && e.key <= '5') toggle(cards[+e.key - 1]);
         else if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (!busy) $('action').click(); }
@@ -199,6 +281,7 @@
                 if (d.result) { stats.wins++; stats.best = Math.max(stats.best, d.payout); }
                 renderStats();
                 setTimeout(() => (d.result ? sfx.win(d.payout >= 25 * bet) : sfx.lose()), 450);
+                if (d.result && d.payout >= 9 * bet) setTimeout(() => confetti(d.payout >= 50 * bet ? 220 : 120), 400);
                 countTo(credits);
                 showDouble(d.can_double ? d.payout : 0);
                 $('message').textContent = d.result ? `${d.result}! You win ${d.payout}` : 'No win. Deal again.';
@@ -228,5 +311,6 @@
 
     $('hintToggle').checked = hints;
     $('soundToggle').checked = sound;
+    syncFull();
     updateUi();
 })();

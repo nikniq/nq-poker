@@ -28,4 +28,9 @@ class LayoutTest extends TestCase
         $user->forceFill(['nikniq_id' => '42'])->save();
         $this->actingAs($user)->get('/')->assertSee('Ace')->assertSee('My Scores')->assertSee('My nikniq.com account')->assertDontSee('Sign up free');
     }
+
+    public function test_game_has_full_screen_control(): void
+    {
+        $this->get('/')->assertOk()->assertSee('id="fullscreen"', false)->assertSee('Full screen');
+    }
 }
