@@ -16,7 +16,12 @@
         ['how-to-play', 'How to Play'],
         ['leaderboard', 'Leaderboard'],
     ];
+    $portal = rtrim((string) config('services.nikniq.url', 'https://nikniq.com'), '/');
 @endphp
+<div class="portal-bar">
+    <a href="{{ $portal }}" class="portal-back">← Back to <strong>nikniq.com</strong></a>
+    <span class="portal-tag">More free games at nikniq.com</span>
+</div>
 <header class="nav">
     <a href="{{ route('game') }}" class="brand"><span class="brand-mark">♠</span> NQ Poker</a>
 
@@ -27,6 +32,8 @@
         @foreach ($links as [$route, $label])
             <a href="{{ route($route) }}" @class(['active' => request()->routeIs($route)]) @if (request()->routeIs($route)) aria-current="page" @endif>{{ $label }}</a>
         @endforeach
+
+        <a href="{{ $portal }}" class="menu-portal" title="More games on nikniq.com"><span class="nq-logo" aria-hidden="true">nq</span> nikniq.com</a>
 
         @auth
             <details class="user">
@@ -41,6 +48,9 @@
                 <div class="user-menu">
                     <div class="user-credits">Credits <strong>{{ auth()->user()->credits }}</strong></div>
                     <a href="{{ route('history') }}" @class(['active' => request()->routeIs('history')])>My Scores</a>
+                    @if (auth()->user()->nikniq_id)
+                        <a href="{{ $portal }}">My nikniq.com account ↗</a>
+                    @endif
                     <form method="POST" action="{{ route('logout') }}">@csrf<button class="link">Log out</button></form>
                 </div>
             </details>
@@ -60,7 +70,8 @@
     <div class="footer-inner">
         <div class="footer-col">
             <a href="{{ route('game') }}" class="brand"><span class="brand-mark">♠</span> NQ Poker</a>
-            <p>Free Jacks or Better video poker. Part of the <a href="https://nikniq.com">nikniq.com</a> games family.</p>
+            <p>Free Jacks or Better video poker. Part of the <a href="{{ $portal }}">nikniq.com</a> games family.</p>
+            <a href="{{ $portal }}" class="btn small btn-portal"><span class="nq-logo" aria-hidden="true">nq</span> Back to nikniq.com</a>
         </div>
         <div class="footer-col">
             <h4>Play</h4>
@@ -80,10 +91,11 @@
         </div>
         <div class="footer-col">
             <h4>More</h4>
-            <a href="https://nikniq.com">More games</a>
+            <a href="{{ $portal }}">nikniq.com home</a>
+            <a href="{{ $portal }}">More games</a>
         </div>
     </div>
-    <p class="footer-note">© {{ date('Y') }} nikniq.com · For entertainment only. Credits have no cash value and no real money is wagered.</p>
+    <p class="footer-note">© {{ date('Y') }} <a href="{{ $portal }}">nikniq.com</a> · For entertainment only. Credits have no cash value and no real money is wagered.</p>
 </footer>
 @stack('scripts')
 </body>

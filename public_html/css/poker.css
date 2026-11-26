@@ -21,6 +21,16 @@ a { color: var(--gold); }
 main { max-width:920px; margin:0 auto; padding:16px; }
 .flash, .notice { background:rgba(0,0,0,.3); padding:10px 14px; border-radius:8px; margin-bottom:12px; }
 
+/* nikniq.com links */
+.portal-bar { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:5px 16px; background:#0a0d33; font-size:.8rem; border-bottom:1px solid rgba(245,197,66,.25); }
+.portal-back { color:var(--text); text-decoration:none; opacity:.85; }
+.portal-back:hover { opacity:1; color:var(--gold); }
+.portal-back strong { color:var(--gold); }
+.portal-tag { opacity:.55; }
+.menu > a.menu-portal { display:inline-flex; align-items:center; gap:6px; border:1px solid rgba(245,197,66,.45); }
+.btn-portal { display:inline-flex; align-items:center; gap:6px; margin-top:10px; background:linear-gradient(180deg,#2b2f6b,#141a5c); color:#fff; box-shadow:0 2px 0 #0a0d33, 0 3px 6px rgba(0,0,0,.3); }
+.footer-note a { color:inherit; }
+
 /* Top menu */
 .brand { display:inline-flex; align-items:center; gap:8px; color:var(--gold); }
 .brand-mark { display:inline-grid; place-items:center; width:30px; height:30px; background:#fff; color:#111; border-radius:6px; box-shadow:0 2px 6px rgba(0,0,0,.4); font-size:1.1rem; transform:rotate(-8deg); }
@@ -246,6 +256,7 @@ nav[role=navigation] svg { width:16px; height:16px; }
     .user { margin:6px 0 0; }
     .user-menu { position:static; margin-top:6px; }
     .footer-inner { grid-template-columns:1fr 1fr; }
+    .portal-tag { display:none; }
     .footer-col:first-child { grid-column:1 / -1; }
 }
 @media (max-width:560px) {
