@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [GameController::class, 'index'])->name('game');
 Route::post('/game/deal', [GameController::class, 'deal'])->name('game.deal');
 Route::post('/game/draw', [GameController::class, 'draw'])->name('game.draw');
+Route::post('/game/double', [GameController::class, 'double'])->middleware('throttle:60,1')->name('game.double');
+Route::post('/game/collect', [GameController::class, 'collect'])->name('game.collect');
 Route::post('/game/reset', [GameController::class, 'reset'])->name('game.reset');
 
 Route::view('/how-to-play', 'how-to-play', ['paytable' => \App\Poker\HandEvaluator::PAYTABLE])->name('how-to-play');

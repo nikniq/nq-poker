@@ -59,6 +59,15 @@
     </table>
     <p><small>Faded cards don't count toward the hand.</small></p>
 
+    <h2>Double Up (optional)</h2>
+    <p>After any winning hand you can gamble your win. Pick <strong>Red</strong> or <strong>Black</strong> (or press <kbd>R</kbd> / <kbd>B</kbd>), and the next card is turned over:</p>
+    <ul>
+        <li><strong>Right colour:</strong> your win doubles, and you can double again, up to 5 times in a row.</li>
+        <li><strong>Wrong colour:</strong> you lose that win, but not your original bet credits.</li>
+        <li>Press <strong>Collect</strong> (<kbd>C</kbd>) or simply deal the next hand to keep your win.</li>
+    </ul>
+    <p class="tip">It's a 50/50 guess every time, so it doesn't change your long-run odds. It just makes each win riskier and more exciting.</p>
+
     <h2>Strategy tips</h2>
     <p class="tip">New to the game? Leave <strong>Hints</strong> switched on (top of the table). After each deal, a dashed outline shows which cards to hold, with a short reason why. Once you're making the same choices yourself, switch hints off with the toggle or press <kbd>H</kbd>.</p>
     <ul>

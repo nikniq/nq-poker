@@ -116,6 +116,55 @@
         $('action').textContent = state === 'dealt' ? 'Draw' : (credits <= 0 ? 'Refill' : 'Deal');
     };
 
+    // --- Double Up ---
+    let doubling = false;
+    const SUITS = { S: '♠', H: '♥', D: '♦', C: '♣' };
+    const showDouble = (amount) => {
+        doubling = amount > 0;
+        $('double').hidden = !doubling;
+        if (!doubling) return;
+        $('doubleAmount').textContent = amount;
+        $('doubleWin').textContent = amount * 2;
+        $('double').querySelectorAll('button').forEach(b => b.disabled = false);
+    };
+    const revealDouble = (c) => {
+        const el = $('doubleCard'), r = c[0] === 'T' ? '10' : c[0];
+        el.className = 'double-card card deal' + ('HD'.includes(c[1]) ? ' red' : '');
+        el.innerHTML = `<span class="corner tl">${r}<small>${SUITS[c[1]]}</small></span><span class="pip">${SUITS[c[1]]}</span>`;
+    };
+    const pick = async (choice) => {
+        if (!doubling || busy) return;
+        busy = true; updateUi();
+        $('double').querySelectorAll('button').forEach(b => b.disabled = true);
+        try {
+            const d = await post(cfg.routes.double, { pick: choice });
+            revealDouble(d.card); credits = d.credits; countTo(credits);
+            if (d.won) {
+                stats.best = Math.max(stats.best, d.amount); renderStats();
+                sfx.win(false);
+                $('message').textContent = `Correct! Your win is now ${d.amount}.`;
+                $('message').classList.add('win');
+            } else {
+                sfx.lose();
+                $('message').textContent = 'Wrong colour. Win lost. Deal again.';
+                $('message').classList.remove('win');
+            }
+            await new Promise(r => setTimeout(r, 900));
+            const back = $('doubleCard'); back.className = 'double-card card back'; back.innerHTML = '';
+            showDouble(d.can_double ? d.amount : 0);
+            if (d.won && !d.can_double) $('message').textContent = `Maximum doubles reached. You collect ${d.amount}!`;
+        } catch (e) {
+            $('message').textContent = e.message; showDouble(0);
+        } finally { busy = false; updateUi(); }
+    };
+    $('double').querySelectorAll('[data-pick]').forEach(b => b.onclick = () => pick(b.dataset.pick));
+    $('collect').onclick = async () => {
+        if (!doubling || busy) return;
+        showDouble(0); sfx.click();
+        try { await post(cfg.routes.collect); } catch (e) {}
+        $('message').textContent = 'Win collected. Deal again.';
+    };
+
     const toggle = (card) => { if (state === 'dealt' && !busy) { card.classList.toggle('hold'); sfx.click(); } };
     const setSound = (on) => { sound = on; $('soundToggle').checked = on; save('pokerSound', on ? 'on' : 'off'); if (on) sfx.click(); };
     $('soundToggle').onchange = (e) => setSound(e.target.checked);
@@ -127,6 +176,7 @@
         if (e.target.closest('input, textarea') || e.metaKey || e.ctrlKey) return;
         if (e.key === 'h' || e.key === 'H') return setHints(!hints);
         if (e.key === 'm' || e.key === 'M') return setSound(!sound);
+        if (doubling && /^[rbc]$/i.test(e.key)) return e.key.toLowerCase() === 'c' ? $('collect').click() : pick(e.key.toLowerCase() === 'r' ? 'red' : 'black');
         if (e.key >= '1' && e.key <= '5') toggle(cards[+e.key - 1]);
         else if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (!busy) $('action').click(); }
         else if (state !== 'dealt' && !busy && (e.key === '+' || e.key === '=')) $('betUp').click();
@@ -150,6 +200,7 @@
                 renderStats();
                 setTimeout(() => (d.result ? sfx.win(d.payout >= 25 * bet) : sfx.lose()), 450);
                 countTo(credits);
+                showDouble(d.can_double ? d.payout : 0);
                 $('message').textContent = d.result ? `${d.result}! You win ${d.payout}` : 'No win. Deal again.';
                 $('message').classList.toggle('win', !!d.result);
                 if (d.result) cards.forEach(c => c.classList.add('winner'));
@@ -160,6 +211,7 @@
             } else {
                 if (bet > credits) bet = credits;
                 const d = await post(cfg.routes.deal, { bet });
+                showDouble(0);
                 $('message').classList.remove('win');
                 cards.forEach(c => c.classList.add('back'));
                 render(d.hand); credits = d.credits; state = 'dealt'; countTo(credits);

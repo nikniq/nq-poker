@@ -16,6 +16,8 @@ class GameController extends Controller
 {
     private const START_CREDITS = 100;
 
+    private const MAX_DOUBLES = 5;
+
     public function index(Request $request)
     {
         return view('game', [
@@ -30,7 +32,7 @@ class GameController extends Controller
         $credits = $this->credits($request);
 
         // An abandoned hand (e.g. page reload) is forfeited; its bet was already taken.
-        $request->session()->forget('poker');
+        $request->session()->forget(['poker', 'double']);
         if ($bet > $credits) {
             return response()->json(['error' => 'Not enough credits.'], 422);
         }
@@ -83,18 +85,58 @@ class GameController extends Controller
             ]);
         }
 
+        if ($payout > 0) {
+            $request->session()->put('double', ['amount' => $payout, 'round' => 0]);
+        }
+
         return response()->json([
             'hand' => $hand,
             'result' => $result,
+            'can_double' => $payout > 0,
             'payout' => $payout,
             'credits' => $credits,
         ]);
     }
 
+    /**
+     * Double Up: after a win, guess the colour of the next card. Right doubles the
+     * win (it can be gambled again, up to MAX_DOUBLES times); wrong loses the win.
+     * The win was already paid, so a loss takes it back and a win adds it again.
+     */
+    public function double(Request $request): JsonResponse
+    {
+        $pick = $request->validate(['pick' => 'required|in:red,black'])['pick'];
+        $state = $request->session()->pull('double');
+        if (! $state) {
+            return response()->json(['error' => 'Nothing to double.'], 422);
+        }
+
+        $card = HandEvaluator::newDeck()[0];
+        $won = (str_contains('HD', $card[1]) ? 'red' : 'black') === $pick;
+        $amount = $state['amount'];
+        $credits = $this->credits($request) + ($won ? $amount : -$amount);
+        $this->setCredits($request, $credits);
+
+        $next = $won ? $amount * 2 : 0;
+        $canAgain = $won && $state['round'] + 1 < self::MAX_DOUBLES;
+        if ($canAgain) {
+            $request->session()->put('double', ['amount' => $next, 'round' => $state['round'] + 1]);
+        }
+
+        return response()->json(['card' => $card, 'won' => $won, 'amount' => $next, 'credits' => $credits, 'can_double' => $canAgain]);
+    }
+
+    public function collect(Request $request): JsonResponse
+    {
+        $request->session()->forget('double');
+
+        return response()->json(['credits' => $this->credits($request)]);
+    }
+
     /** Refill to the starting bankroll when broke. */
     public function reset(Request $request): JsonResponse
     {
-        $request->session()->forget('poker');
+        $request->session()->forget(['poker', 'double']);
         if ($this->credits($request) > 0) {
             return response()->json(['error' => 'You still have credits.'], 422);
         }
